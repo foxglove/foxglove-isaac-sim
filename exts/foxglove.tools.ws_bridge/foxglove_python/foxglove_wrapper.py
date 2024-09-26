@@ -18,6 +18,11 @@ from foxglove_websocket.types import (
     ServiceId,
 )
 
+# Print color
+class Colors:
+    RESET = "\033[0m"
+    MAGENTA = "\033[35m"
+    MAGENTA_BOLD = MAGENTA + "\033[1m"
 
 # Maps sensor types to json schema files and names
 type2json = {"camera_raw" : {"file": "RawImage.json", "name" : "foxglove.RawImage"},
@@ -50,6 +55,7 @@ class FoxgloveWrapper():
         if self.server:
             self.server_task.cancel()
             self.server = None
+            print(Colors.MAGENTA_BOLD + f"[Foxglove Info] Foxglove server closed" + Colors.RESET)
 
 
     async def _run_server(self, port : int, sensors : dict):
@@ -58,6 +64,8 @@ class FoxgloveWrapper():
                 self.server.set_listener(Listener(self.data_collector, self.channel2path))
 
                 await self.init_channels(sensors)
+
+                print(Colors.MAGENTA_BOLD + f"[Foxglove Info] Foxglove server started at ws://0.0.0.0:{port}" + Colors.RESET)
 
                 while True:
                     await asyncio.sleep(1)
@@ -139,9 +147,13 @@ class Listener(FoxgloveServerListener):
         self.channel2path = channel2path
 
     async def on_subscribe(self, server: FoxgloveServer, channel_id: ChannelId):
-        self.data_collector.sensors[self.channel2path[channel_id]].enable()
-        print("First client subscribed to", channel_id)
+        path = self.channel2path[channel_id]
+        topic = type2topic[self.data_collector.sensors[path].type]
+        self.data_collector.sensors[path].enable()
+        print(Colors.MAGENTA_BOLD + f"[Foxglove Info] First client subscribed to {path}{topic}" + Colors.RESET)
 
     async def on_unsubscribe(self, server: FoxgloveServer, channel_id: ChannelId):
-        self.data_collector.sensors[self.channel2path[channel_id]].disable()
-        print("Last client unsubscribed from", channel_id)
+        path = self.channel2path[channel_id]
+        topic = type2topic[self.data_collector.sensors[path].type]
+        self.data_collector.sensors[path].disable()
+        print(Colors.MAGENTA_BOLD + f"[Foxglove Info] Last client unsubscribed from {path}{topic}" + Colors.RESET)
