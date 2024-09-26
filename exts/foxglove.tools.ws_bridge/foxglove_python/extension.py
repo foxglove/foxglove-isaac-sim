@@ -142,7 +142,7 @@ class FoxgloveExtension(omni.ext.IExt):
     #################################################################
 
     def _open_browser(self):
-        url = "https://app.foxglove.dev/"
+        url = "https://app.foxglove.dev/~/view?ds=foxglove-websocket&ds.url=ws%3A%2F%2Flocalhost%3A" + str(self.ui_builder.last_saved_port)
         webbrowser.open(url, autoraise=True)
 
     def _menu_callback(self):

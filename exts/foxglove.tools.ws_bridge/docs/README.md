@@ -9,5 +9,5 @@ Inside Isaac Sim, open the Foxglove Extension tab by clicking on Foxglove > Foxg
 follow the instructions to start publishing.
 
 To visualize the data, you will need to open a WebSocket connection from your Foxglove Dashboard to ws://localhost:<port>.
-Inside Isaac Sim, you can click on Foxglove > Open in Browser in the toolbar to be redirected to Foxglove's web app.
+Inside Isaac Sim, you can click on Foxglove > Open in Browser in the toolbar to directly connect to the websocket session.
 

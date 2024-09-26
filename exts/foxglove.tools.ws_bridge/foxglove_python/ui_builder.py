@@ -52,6 +52,7 @@ class UIBuilder:
         # Foxglove inits
         self.data_collect = DataCollector()
         self.publishing = False
+        self.last_saved_port = 8765
         self.server_port = 8765
         self.cam_width = 128
         self.cam_height = 128
@@ -351,6 +352,7 @@ class UIBuilder:
         self.server_port = port
 
     def _on_port_applied(self):
+        self.last_saved_port = self.server_port
         if self.publishing:
             self.data_collect.fox_wrap.close()
             self.data_collect.fox_wrap.start(self.server_port, self.data_collect.sensors)
