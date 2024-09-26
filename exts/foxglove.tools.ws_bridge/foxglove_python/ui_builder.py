@@ -7,9 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import os
-from typing import List
-import time
+import webbrowser
 
 import omni.ui as ui
 from omni.isaac.ui.element_wrappers import (
@@ -126,15 +124,17 @@ class UIBuilder:
         """
         if not self.data_collect.sensors:
             self.data_collect.init_sensors()
-        
-        self.data_collect.update_sensors()
+        else:
+            self.data_collect.update_sensors()
 
-        # Create a UI frame for text description
-        self._create_description_frame()
+        # Create a UI frame for text description and open foxglove button
+        self._create_description_frame_1()
 
-        # Create a UI frame for Refresh and Update buttons
         self._create_spacer(10)
-        self._create_publish_button()
+        self._create_foxglove_button()
+        self._create_spacer(10)
+        
+        self._create_description_frame_2()
         self._create_spacer(10)
 
         # Create a UI frame for the list of Cameras
@@ -146,30 +146,37 @@ class UIBuilder:
         # Create a UI frame for the list of Articulations
         self._create_articulation_frame()
 
-        # Create a UI frame for the root frame selection for TF Tree
+        # Create a UI frame for the settings frame
         self._create_settings_frame()
 
         # Create a UI frame that prints the latest UI event.
         self._create_spacer(20)
         self._create_status_report_frame()
 
-        status = "UI window was opened"
-        self._status_report_field.set_text(status)
-
         # Start server once everything is initialized
         self.data_collect.fox_wrap.start(self.server_port, self.data_collect.sensors)
         self.publishing = True
+        status = f"Server was started at\nws://0.0.0.0:{self.last_saved_port}"
+        self._status_report_field.set_text(status)
 
 
-    def _create_description_frame(self):
-        self._description_frame = Frame()
-        with self._description_frame:
+    def _create_description_frame_1(self):
+        self._description_frame_1 = Frame()
+        with self._description_frame_1:
             with ui.VStack(style=get_style(), spacing=5, height=0):
                 self.description = ui.Label(
                     "   Welcome to the Foxglove Extension for Isaac Sim!\n" +
-                    "   To view in Foxglove, open a new connection from\n" +
+                    "   To view in Foxglove, click on the button below.\n" +
+                    "   Alternatively, you can open a new connection from\n" +
                     "   your Foxglove dashboard to the following URL:\n" +
-                    "   ws://localhost:<port> (default port is 8765).\n\n"
+                    "   ws://localhost:<port> (default port is 8765)."
+                )
+    
+    def _create_description_frame_2(self):
+        self._description_frame_2 = Frame()
+        with self._description_frame_2:
+            with ui.VStack(style=get_style(), spacing=5, height=0):
+                self.description = ui.Label(
                     "   Below is the list of all the data automatically detected\n" + 
                     "   by the extension, organized by type. You can access\n" +
                     "   each of these data streams within Foxglove. Under \n" +
@@ -177,6 +184,17 @@ class UIBuilder:
                     "   resolution, and the frame that should serve as the\n" +
                     "   root for the transform tree."
                 )
+
+    def _create_foxglove_button(self):
+        self._view_in_foxglove_frame = Frame()
+        with self._view_in_foxglove_frame:
+            with ui.VStack(style=get_style(), spacing=5, height=0):
+
+                open_foxglove_button = Button("   Open WebSocket Client",
+                                              "View in Foxglove",
+                                              tooltip="Click this button to open Foxglove in your browser",
+                                              on_click_fn=self._on_open_foxglove)
+                self.wrapped_ui_elements.append(open_foxglove_button)
 
     def _create_publish_button(self):
         self._publish_button_frame = Frame()
@@ -242,7 +260,7 @@ class UIBuilder:
         with self._server_port_frame:
             with ui.VStack(style=get_style(), spacing=5, height=0):
                 server_port_intfield = IntField("Port",
-                                                tooltip="Change the port for the Foxglove server)",
+                                                tooltip="Change the port for the Foxglove server",
                                                 default_value=self.server_port,
                                                 lower_limit=0,
                                                 upper_limit=9999,
@@ -261,7 +279,7 @@ class UIBuilder:
         with self._camera_resolution_frame:
             with ui.VStack(style=get_style(), spacing=5, height=0):
                 camera_width_intfield = IntField("Width",
-                                                 tooltip="Change the width of the camera\n(the larger the slower)",
+                                                 tooltip="Change the width of the camera (larger = slower)",
                                                  default_value=self.cam_width,
                                                  lower_limit=0,
                                                  upper_limit=1280,
@@ -269,7 +287,7 @@ class UIBuilder:
                 self.wrapped_ui_elements.append(camera_width_intfield)
 
                 camera_height_intfield = IntField("Height",
-                                                tooltip="Change the height of the camera\n(the larger the slower)",
+                                                tooltip="Change the height of the camera (larger = slower)",
                                                 default_value=self.cam_height,
                                                 lower_limit=0,
                                                 upper_limit=800,
@@ -299,7 +317,7 @@ class UIBuilder:
 
                 self.tf_root_dropdown = DropDown(
                     "Root",
-                    tooltip="Select the root for the Transform Tree to be published",
+                    tooltip="Select the frame that should be used as a root for the Transform Tree",
                     populate_fn=tf_root_dropdown_populate_fn,
                     on_selection_fn=self._on_tf_root_selection_fn,
                     keep_old_selections=True,
@@ -336,16 +354,21 @@ class UIBuilder:
     # Functions Below This Point Are Callback Functions Attached to UI Element Wrappers
     ######################################################################################
 
+    def _on_open_foxglove(self):
+        print("check")
+        url = "https://app.foxglove.dev/~/view?ds=foxglove-websocket&ds.url=ws%3A%2F%2Flocalhost%3A" + str(self.last_saved_port)
+        webbrowser.open(url, autoraise=True)
+        status = "Opened Foxglove in browser"
+        self._status_report_field.set_text(status)
+
     def _on_publish_on_click_fn(self):
-        self.data_collect.fox_wrap.start(self.server_port, self.data_collect.sensors)
         self.publishing = True
-        status = "Foxglove server started at:\nws://0.0.0.0:" + str(self.server_port)
+        status = "Now publishing to Foxglove"
         self._status_report_field.set_text(status)
     
     def _on_publish_off_click_fn(self):
-        self.data_collect.fox_wrap.close()
         self.publishing = False
-        status = "Foxglove server closed"
+        status = "Stopped publishing to Foxglove"
         self._status_report_field.set_text(status)
 
     def _on_port_changed(self, port : int):
@@ -353,9 +376,8 @@ class UIBuilder:
 
     def _on_port_applied(self):
         self.last_saved_port = self.server_port
-        if self.publishing:
-            self.data_collect.fox_wrap.close()
-            self.data_collect.fox_wrap.start(self.server_port, self.data_collect.sensors)
+        self.data_collect.fox_wrap.close()
+        self.data_collect.fox_wrap.start(self.server_port, self.data_collect.sensors)
         status = f"Server port was set to {self.server_port}"
         self._status_report_field.set_text(status)
 
