@@ -1,0 +1,44 @@
+{
+    "title": "Imu",
+    "description": "Imu sensor reading",
+    "type": "object",
+    "properties": {
+        "ang_vel_x": {
+            "type": "number",
+            "description": "Angular velocity around the X-axis"
+        },
+        "ang_vel_y": {
+            "type": "number",
+            "description": "Angular velocity around the Y-axis"
+        },
+        "ang_vel_z": {
+            "type": "number",
+            "description": "Angular velocity around the Z-axis"
+        },
+        "lin_acc_x": {
+            "type": "number",
+            "description": "Linear acceleration along the X-axis"
+        },
+        "lin_acc_y": {
+            "type": "number",
+            "description": "Linear acceleration along the Y-axis"
+        },
+        "lin_acc_z": {
+            "type": "number",
+            "description": "Linear acceleration along the Z-axis"
+        },
+        "orientation": {
+            "type": "array",
+            "description": "Orientation quaternion [x, y, z, w]",
+            "items": {
+                "type": "number"
+            },
+            "minItems": 4,
+            "maxItems": 4
+        },
+        "time": {
+            "type": "number",
+            "description": "Timestamp of the IMU measurement"
+        }
+    }
+}

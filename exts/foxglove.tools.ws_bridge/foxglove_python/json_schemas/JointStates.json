@@ -1,0 +1,35 @@
+{
+    "title": "JointStates",
+    "description": "Joint states (names, positions, velocities, efforts)",
+    "type": "object",
+    "properties": {
+        "joint_names": {
+            "type": "array",
+            "description": "List of joint names",
+            "items": {
+                "type": "string"
+            }
+        },
+        "joint_positions": {
+            "type": "array",
+            "description": "List of joint positions corresponding to the joint names",
+            "items": {
+                "type": "number"
+            }
+        },
+        "joint_velocities": {
+            "type": "array",
+            "description": "List of joint velocities corresponding to the joint names",
+            "items": {
+                "type": "number"
+            }
+        },
+        "joint_efforts": {
+            "type": "array",
+            "description": "List of joint efforts corresponding to the joint names",
+            "items": {
+                "type": "number"
+            }
+        }
+    }
+}
