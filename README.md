@@ -6,11 +6,13 @@ An Isaac Sim extension to connect any project to the Foxglove visualization plat
 
 ## Using the Extension
 
-Once the extension is installed, enable it and open the extension tab under `Foxglove` > `Foxglove Extension` in the toolbar. A Foxglove server should be started automatically.
+Once the extension is installed, enable it and open the extension tab under `Foxglove` > `Foxglove Extension` in the toolbar. A Foxglove server will be started automatically and remain open until this tab is closed.
 
 <img src="images/extension_tab.png" alt="Foxglove extension tab inside Isaac Sim" width="80%"><br>
 
-From your [Foxglove Dashboard](https://app.foxglove.dev/) in the desktop app or in a browser, open a new WebSocket connection to URL: `ws://localhost:<port>`, where `<port>` can be specified in the *Settings* menu of the extension tab (default is `8765`).
+To visualize the data, simply click on "View in Foxglove" to directly connect to the WebSocket session.
+
+Alternatively, from your [Foxglove Dashboard](https://app.foxglove.dev/), open a new WebSocket connection to URL: `ws://localhost:<port>`, where `<port>` can be specified in the *Settings* menu of the extension tab (default is `8765`).
 
 <img src="images/new_connection.png" alt="Opening a new connection in the Foxglove Dashboard" width="60%"><br>
 

@@ -28,8 +28,13 @@ Initial version of the Foxglove Extension: hard-coded for the Quadruped Isaac Ex
 
 ### Added
 
-- Server now starts automatically
+- "View in Foxglove" button to directly open a WebSocket client in browser
+- Server starts automatically
 - Settings collapsable menu in the extension tab
 - Can set server port manually
 - Can choose camera resolution
 - Can select root frame for TF tree
+
+### Removed
+
+- Button to start/stop server
