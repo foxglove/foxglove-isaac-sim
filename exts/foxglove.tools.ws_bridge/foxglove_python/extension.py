@@ -67,13 +67,13 @@ class FoxgloveExtension(omni.ext.IExt):
         )
         action_registry.register_action(
             ext_id,
-            f"OpenBrowser:{EXTENSION_TITLE}",
-            self._open_browser,
+            f"OpenDashboard:{EXTENSION_TITLE}",
+            self._open_dashboard,
             description=f"Open Foxglove inside Browser",
         )
         self._menu_items = [
             MenuItemDescription(name="Foxglove Extension", onclick_action=(ext_id, f"CreateUIExtension:{EXTENSION_TITLE}")),
-            MenuItemDescription(name="Open in Browser", onclick_action=(ext_id, f"OpenBrowser:{EXTENSION_TITLE}"))
+            MenuItemDescription(name="Open Dashboard", onclick_action=(ext_id, f"OpenDashboard:{EXTENSION_TITLE}"))
         ]
 
         add_menu_items(self._menu_items, EXTENSION_TITLE)
@@ -94,7 +94,7 @@ class FoxgloveExtension(omni.ext.IExt):
 
         action_registry = omni.kit.actions.core.get_action_registry()
         action_registry.deregister_action(self.ext_id, f"CreateUIExtension:{EXTENSION_TITLE}")
-        action_registry.deregister_action(self.ext_id, f"OpenBrowser:{EXTENSION_TITLE}")
+        action_registry.deregister_action(self.ext_id, f"OpenDashboard:{EXTENSION_TITLE}")
 
         if self._window:
             self._window = None
@@ -141,8 +141,8 @@ class FoxgloveExtension(omni.ext.IExt):
     # Functions below this point call user functions
     #################################################################
 
-    def _open_browser(self):
-        url = "https://app.foxglove.dev/~/view?ds=foxglove-websocket&ds.url=ws%3A%2F%2Flocalhost%3A" + str(self.ui_builder.last_saved_port)
+    def _open_dashboard(self):
+        url = "https://app.foxglove.dev"
         webbrowser.open(url, autoraise=True)
 
     def _menu_callback(self):
