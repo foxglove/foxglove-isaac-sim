@@ -26,4 +26,4 @@ name = "foxglove_isaac_bridge"
 
 [python.pipapi]
 use_online_index = true
-requirements = ["foxglove-websocket"]
+requirements = ["foxglove-websocket", "foxglove-schemas-protobuf"]

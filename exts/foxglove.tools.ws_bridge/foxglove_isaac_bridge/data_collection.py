@@ -1,6 +1,8 @@
 import io
 import base64
 import os
+import json
+import time
 
 from PIL import Image
 import numpy as np
@@ -10,6 +12,12 @@ import omni.isaac.sensor as sensor
 from omni.isaac.core.articulations import Articulation
 from pxr import Gf, UsdGeom
 from pxr.Usd import Prim as Prim
+
+from foxglove_schemas_protobuf.CompressedImage_pb2 import CompressedImage
+from foxglove_schemas_protobuf.FrameTransform_pb2 import FrameTransform
+from foxglove_schemas_protobuf.FrameTransforms_pb2 import FrameTransforms
+from foxglove_schemas_protobuf.Vector3_pb2 import Vector3
+from foxglove_schemas_protobuf.Quaternion_pb2 import Quaternion
 
 from .foxglove_wrapper import FoxgloveWrapper
 
@@ -79,16 +87,21 @@ class IsaacSensor():
     def cam_collect(self):
         """Get the current camera frame"""
         try:
-            # Compressed Image
+            # Compressed Image (Protobuf)
             if self.compressed:
                 image = self._sensor.get_rgb()
                 frame = Image.fromarray(image)
                 buffered = io.BytesIO()
                 frame.save(buffered, format="jpeg")
-                frame_base64 = base64.b64encode(buffered.getvalue()).decode('utf-8')
-                data_frame = {"data": frame_base64, "format": "jpeg"}
 
-            # Raw Image
+                compressed_image = CompressedImage()
+                compressed_image.format = "jpeg"
+                compressed_image.data = buffered.getvalue()
+                compressed_image.frame_id = self.path
+
+                payload = compressed_image.SerializeToString()
+
+            # Raw Image (Not used at the moment)
             else:
                 image = self._sensor.get_rgb()
                 frame = Image.fromarray(image)
@@ -108,10 +121,14 @@ class IsaacSensor():
                               "encoding": encoding,
                               "step": step,
                               "data": frame_base64}
-        except:
-            return None
 
-        return data_frame
+                payload = json.dumps(data_frame).encode("utf8")
+
+        except Exception as e:
+            print(e)
+            return
+
+        return payload
     
 
     def imu_collect(self):
@@ -136,7 +153,7 @@ class IsaacSensor():
         except:
             pass
 
-        return imu_out
+        return json.dumps(imu_out).encode("utf8")
     
 
     def articulation_collect(self):
@@ -148,7 +165,7 @@ class IsaacSensor():
                         "joint_velocities": self._sensor.get_joint_velocities().tolist(),
                         "joint_efforts": self._sensor.get_measured_joint_efforts().tolist()}
         
-        return joint_states
+        return json.dumps(joint_states).encode("utf8")
     
     
     def tf_tree_collect(self):
@@ -158,28 +175,33 @@ class IsaacSensor():
         root = self._sensor.GetPrimAtPath(self.path)
         self.fetch_transforms(root) # Populate self.transform_list
 
-        transforms = []
+        transform_entries = []
 
         for matrix, parent_frame_id, child_frame_id in self.transform_list:
-            transforms.append(
+            transform_entries.append(
                 self.create_transform_entry(matrix, parent_frame_id, child_frame_id)
             )
 
-        return {"transforms": transforms}
+        tf = FrameTransforms()
+        for transform_entry in transform_entries:
+            tf.transforms.add().CopyFrom(transform_entry)
+        payload = tf.SerializeToString()
+
+        return payload
     
     def fetch_transforms(self, prim, parent_prim = None):
-        prim_name = prim.GetName()
+        prim_id = str(prim.GetPath())
 
         transform = UsdGeom.Xformable(prim)
         local_transform = transform.GetLocalTransformation()
 
         if parent_prim:
-            self.transform_list.append((local_transform, parent_prim, prim_name))
+            self.transform_list.append((local_transform, parent_prim, prim_id))
         
         for child in prim.GetChildren():
             child_type = child.GetTypeName()
             if self.typeIsValid(child_type) and child.GetName() != "Render":
-                self.fetch_transforms(child, prim_name)
+                self.fetch_transforms(child, prim_id)
     
     def typeIsValid(self, prim_type: str):
         return prim_type not in ["OmniGraph", "Scope", "Material"] \
@@ -188,34 +210,31 @@ class IsaacSensor():
                 and "Render" not in prim_type \
 
     def matrix_to_translation_rotation(self, matrix):
-        # Extract translation
-        translation = matrix.ExtractTranslation()
-
-        # Extract rotation as quaternion
-        rotation = Gf.Quatf(matrix.ExtractRotationQuat())
-
-        return {
-            "translation": {
-                "x": translation[0],
-                "y": translation[1],
-                "z": translation[2]
-            },
-            "rotation": {
-                "x": rotation.GetImaginary()[0],
-                "y": rotation.GetImaginary()[1],
-                "z": rotation.GetImaginary()[2],
-                "w": rotation.GetReal()
-            }
-        }
+        translation = matrix.ExtractTranslation() # Extract translation
+        rotation = Gf.Quatf(matrix.ExtractRotationQuat()) # Extract rotation as quaternion
+        return translation, rotation
     
     def create_transform_entry(self, matrix, parent_frame_id, child_frame_id):
-        transform = self.matrix_to_translation_rotation(matrix)
-        return {
-            "parent_frame_id": parent_frame_id,
-            "child_frame_id": child_frame_id,
-            "translation": transform["translation"],
-            "rotation": transform["rotation"]
-        }
+        translation, rotation = self.matrix_to_translation_rotation(matrix)
+
+        translation_vect = Vector3()
+        translation_vect.x = translation[0]
+        translation_vect.y = translation[1]
+        translation_vect.z = translation[2]
+
+        rotation_quat = Quaternion()
+        rotation_quat.x = rotation.GetImaginary()[0]
+        rotation_quat.y = rotation.GetImaginary()[1]
+        rotation_quat.z = rotation.GetImaginary()[2]
+        rotation_quat.w = rotation.GetReal()
+
+        transform_entry = FrameTransform()
+        transform_entry.parent_frame_id = parent_frame_id
+        transform_entry.child_frame_id = child_frame_id
+        transform_entry.translation.CopyFrom(translation_vect)
+        transform_entry.rotation.CopyFrom(rotation_quat)
+        
+        return transform_entry
 
 
 

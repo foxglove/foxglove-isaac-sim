@@ -75,7 +75,7 @@ class FoxgloveWrapper():
         schema_path = os.path.join(curr_dir, 'json_schemas/')
 
         for sensor in sensors.values():
-            await self._add_channel(sensor, schema_path)
+            await self._add_channel(sensor)
 
 
     def add_channel(self, sensor):
@@ -85,27 +85,23 @@ class FoxgloveWrapper():
 
         loop = asyncio.get_event_loop()
         if self.server:
-            loop.create_task(self._add_channel(sensor, schema_path))
+            loop.create_task(self._add_channel(sensor))
 
 
-    async def _add_channel(self, sensor, schema_path : str):
+    async def _add_channel(self, sensor):
 
-        schema_name, schema_file = get_schema_for_sensor(sensor)
+        schema_name, schema, encoding, schema_encoding = get_schema_for_sensor(sensor)
         topic_name = get_topic_for_sensor(sensor)
-
-        with open(schema_path + schema_file, 'r') as schema_file:
-            schema = json.load(schema_file)
         
         self.path2channel[sensor.path] = await self.server.add_channel(
             {
                 "topic": topic_name,
-                "encoding": "json",
+                "encoding": encoding,
                 "schemaName": schema_name,
-                "schema": json.dumps(schema),
-                "schemaEncoding": "jsonschema",
+                "schema": schema,
+                "schemaEncoding": schema_encoding,
             }
         )
-
         self.channel2path[self.path2channel[sensor.path]] = sensor.path
 
     
@@ -133,7 +129,7 @@ class FoxgloveWrapper():
                 await self.server.send_message(
                     self.path2channel[path],
                     time.time_ns(),
-                    json.dumps(payload).encode("utf8"),
+                    payload,
                 )
 
     
