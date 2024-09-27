@@ -1,25 +1,14 @@
-# Loading Extension
-To enable this extension, run Isaac Sim with the flags --ext-folder {path_to_ext_folder} --enable {ext_directory_name}
-The user will see the extension appear on the toolbar on startup with the title they specified in the Extension Generator
+# Code Overview
 
-# Extension Usage
-This template provides the example usage for a library of UIElementWrapper objects that help to quickly develop
-custom UI tools with minimal boilerplate code.
+## extension.py
+A class containing the standard boilerplate necessary to have the extension show up on the Toolbar.
+In extension.py, useful standard callback functions are created and are completed in ui_builder.py.
 
+## ui_builder.py
+This file contains the extension's main code.  Here, the UI is created and each element is hooked up to custom callback functions talking to the Foxglove Wrapper running the Server.
 
-# Template Code Overview
-The template is well documented and is meant to be self-explanatory to the user should they
-start reading the provided python files.  A short overview is also provided here:
+## data_collection.py
+This file contains the custom IsaacSensor class and the DataCollector class handling all the sensor data queries. This is where sensors are automatically sorted according to their types.
 
-global_variables.py: 
-    A script that stores in global variables that the user specified when creating this extension such as the Title and Description.
-
-extension.py:
-    A class containing the standard boilerplate necessary to have the user extension show up on the Toolbar.  This
-    class is meant to fulfill most ues-cases without modification.
-    In extension.py, useful standard callback functions are created that the user may complete in ui_builder.py.
-
-ui_builder.py:
-    This file is the user's main entrypoint into the template.  Here, the user can see useful callback functions that have been
-    set up for them, and they may also create UI buttons that are hooked up to more user-defined callback functions.  This file is
-    the most thoroughly documented, and the user should read through it before making serious modification.
+## foxglove_wrapper.py
+A class running the Foxglove Server in parallel with the simulation. It handles channel definitions, additions, removals, and sending messages.
