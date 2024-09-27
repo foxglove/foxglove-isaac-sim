@@ -38,3 +38,10 @@ Initial version of the Foxglove Extension: hard-coded for the Quadruped Isaac Ex
 ### Removed
 
 - Button to start/stop server
+
+## [1.3.0] - 2024-09-27
+
+### Added
+
+- Support for Protobuf encoding
+- Camera and TF tree are now protobuf encoded
