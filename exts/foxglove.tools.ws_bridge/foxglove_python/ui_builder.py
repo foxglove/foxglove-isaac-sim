@@ -1,36 +1,19 @@
-# Copyright (c) 2022-2023, NVIDIA CORPORATION. All rights reserved.
-#
-# NVIDIA CORPORATION and its licensors retain all intellectual property
-# and proprietary rights in and to this software, related documentation
-# and any modifications thereto. Any use, reproduction, disclosure or
-# distribution of this software and related documentation without an express
-# license agreement from NVIDIA CORPORATION is strictly prohibited.
-#
-
 import webbrowser
 
+import omni
 import omni.ui as ui
+from omni.isaac.ui.ui_utils import get_style
 from omni.isaac.ui.element_wrappers import (
     Button,
-    CheckBox,
     Frame,
     CollapsableFrame,
-    ColorPicker,
     DropDown,
-    FloatField,
     IntField,
     StateButton,
-    StringField,
     TextBlock,
-    XYPlot,
 )
-from omni.isaac.ui.ui_utils import get_style
-
-import omni
-from pxr import Usd, UsdGeom, UsdPhysics
 
 from .data_collection import DataCollector
-# from .foxglove_wrapper import FoxgloveWrapper
 
 class UIBuilder:
     def __init__(self):
@@ -115,7 +98,8 @@ class UIBuilder:
             ui_elem.cleanup()
         
         # Foxglove objects
-        self.data_collect.fox_wrap.close()
+        self.publishing = False
+        self.data_collect.cleanup()
 
     def build_ui(self):
         """
@@ -355,7 +339,6 @@ class UIBuilder:
     ######################################################################################
 
     def _on_open_foxglove(self):
-        print("check")
         url = "https://app.foxglove.dev/~/view?ds=foxglove-websocket&ds.url=ws%3A%2F%2Flocalhost%3A" + str(self.last_saved_port)
         webbrowser.open(url, autoraise=True)
         status = "Opened Foxglove in browser"

@@ -1,12 +1,9 @@
 import io
 import base64
-import json
-import time
 import os
 
 from PIL import Image
 import numpy as np
-import matplotlib.pyplot as plt
 
 import omni
 import omni.isaac.sensor as sensor
@@ -238,7 +235,7 @@ class DataCollector():
         self.sensors_sorted = {"camera" : set(),
                             "imu" : set(),
                             "articulation" : set(),
-                            "tf_tree" : None}
+                            "tf_tree" : set()}
         
         self.fox_wrap = FoxgloveWrapper(self)
         
@@ -353,3 +350,12 @@ class DataCollector():
                 data[sensor.path] = sensor.collect()
         
         self.fox_wrap.send_message(data)
+    
+
+    def cleanup(self):
+        self.fox_wrap.close()
+        self.sensors = dict()
+        self.sensors_sorted = {"camera" : set(),
+                            "imu" : set(),
+                            "articulation" : set(),
+                            "tf_tree" : set()}
