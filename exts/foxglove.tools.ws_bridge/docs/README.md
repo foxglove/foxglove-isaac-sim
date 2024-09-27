@@ -9,5 +9,5 @@ Inside Isaac Sim, open the Foxglove Extension tab by clicking on Foxglove > Foxg
 server will remain open as long as this tab is not closed.
 
 To visualize the data, simply click on "View in Foxglove" to directly connect to the WebSocket session.
-Alternatively, you can manually open a WebSocket connection from your Foxglove Dashboard to ws://localhost:<port>.
+Alternatively, you can manually open a WebSocket connection from your Foxglove Dashboard to ws://localhost:[port].
 

@@ -12,29 +12,20 @@ import gc
 
 import omni
 import omni.kit.commands
-import omni.physx as _physx
+import omni.physx as physx
 import omni.timeline
 import omni.ui as ui
 import omni.usd
 from omni.isaac.ui.element_wrappers import ScrollingWindow
 from omni.isaac.ui.menu import MenuItemDescription
-from omni.kit.menu.utils import add_menu_items, remove_menu_items, refresh_menu_items
+from omni.kit.menu.utils import add_menu_items, remove_menu_items
 from omni.usd import StageEventType
 
-from .global_variables import EXTENSION_DESCRIPTION, EXTENSION_TITLE
 from .ui_builder import UIBuilder
 
 import webbrowser
 
 """
-This file serves as a basic template for the standard boilerplate operations
-that make a UI-based extension appear on the toolbar.
-
-This implementation is meant to cover most use-cases without modification.
-Various callbacks are hooked up to a seperate class UIBuilder in .ui_builder.py
-Most users will be able to make their desired UI extension by interacting solely with
-UIBuilder.
-
 This class sets up standard useful callback functions in UIBuilder:
     on_menu_callback: Called when extension is opened
     on_timeline_event: Called when timeline is stopped, paused, or played
@@ -43,6 +34,8 @@ This class sets up standard useful callback functions in UIBuilder:
     cleanup: Called when resources such as physics subscriptions should be cleaned up
     build_ui: User function that creates the UI they want.
 """
+
+EXTENSION_TITLE = "Foxglove"
 
 
 class FoxgloveExtension(omni.ext.IExt):
@@ -83,7 +76,7 @@ class FoxgloveExtension(omni.ext.IExt):
 
         # Events
         self._usd_context = omni.usd.get_context()
-        self._physxIFace = _physx.acquire_physx_interface()
+        self._physxIFace = physx.acquire_physx_interface()
         self._physx_subscription = None
         self._stage_event_sub = None
         self._timeline = omni.timeline.get_timeline_interface()

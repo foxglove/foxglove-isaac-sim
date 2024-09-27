@@ -1,41 +1,36 @@
-import threading
 import asyncio
 import json
 import time
 import os
-import logging
-
-from typing import Any, Coroutine, Dict
 
 from foxglove_websocket.server import FoxgloveServer, FoxgloveServerListener
-from foxglove_websocket import run_cancellable
-from foxglove_websocket.types import ChannelId, ChannelWithoutId
+from foxglove_websocket.types import ChannelId
 
 from foxglove_websocket.types import (
     ChannelId,
-    ClientChannel,
-    ClientChannelId,
-    ServiceId,
 )
 
-# Print color
+from .schemas import get_schema_for_sensor
+
+
+# Terminal text formatting
 class Colors:
     RESET = "\033[0m"
     MAGENTA = "\033[35m"
     MAGENTA_BOLD = MAGENTA + "\033[1m"
 
-# Maps sensor types to json schema files and names
-type2json = {"camera_raw" : {"file": "RawImage.json", "name" : "foxglove.RawImage"},
-             "camera": {"file": "CompressedImage.json", "name": "foxglove.CompressedImage"},
-             "imu" : {"file": "Imu.json", "name": "IMU"},
-             "articulation" : {"file": "JointStates.json", "name": "JointStates"},
-             "tf_tree" : {"file": "FrameTransforms.json", "name": "foxglove.FrameTransforms"}}
 
-# Maps sensor types to topic names
-type2topic = {"camera" : "",
-              "imu" : "",
-              "articulation" : "/joint_states",
-              "tf_tree" : "tf"}
+def get_topic_for_sensor(sensor):
+
+    if sensor.type == "tf_tree":
+        return "/tf"
+
+    suffix = ""
+    if sensor.type == "articulation":
+        suffix = "/joint_states"
+    # Add suffixes for future supported format here
+    
+    return sensor.path + suffix
 
 
 class FoxgloveWrapper():
@@ -95,14 +90,17 @@ class FoxgloveWrapper():
 
     async def _add_channel(self, sensor, schema_path : str):
 
-        with open(schema_path + type2json[sensor.type]["file"], 'r') as schema_file:
+        schema_name, schema_file = get_schema_for_sensor(sensor)
+        topic_name = get_topic_for_sensor(sensor)
+
+        with open(schema_path + schema_file, 'r') as schema_file:
             schema = json.load(schema_file)
         
         self.path2channel[sensor.path] = await self.server.add_channel(
             {
-                "topic": "/tf" if sensor.type == "tf_tree" else sensor.path + type2topic[sensor.type],
+                "topic": topic_name,
                 "encoding": "json",
-                "schemaName": type2json[sensor.type]["name"],
+                "schemaName": schema_name,
                 "schema": json.dumps(schema),
                 "schemaEncoding": "jsonschema",
             }
@@ -131,7 +129,7 @@ class FoxgloveWrapper():
 
     async def _send_message(self, data : dict):
         for path, payload in data.items():
-            if payload:
+            if self.server and payload:
                 await self.server.send_message(
                     self.path2channel[path],
                     time.time_ns(),
@@ -148,12 +146,13 @@ class Listener(FoxgloveServerListener):
 
     async def on_subscribe(self, server: FoxgloveServer, channel_id: ChannelId):
         path = self.channel2path[channel_id]
-        topic = type2topic[self.data_collector.sensors[path].type]
+        topic = get_topic_for_sensor(self.data_collector.sensors[path])
         self.data_collector.sensors[path].enable()
-        print(Colors.MAGENTA_BOLD + f"[Foxglove Info] First client subscribed to {path}{topic}" + Colors.RESET)
+        print(Colors.MAGENTA_BOLD + f"[Foxglove Info] First client subscribed to {topic}" + Colors.RESET)
 
     async def on_unsubscribe(self, server: FoxgloveServer, channel_id: ChannelId):
         path = self.channel2path[channel_id]
-        topic = type2topic[self.data_collector.sensors[path].type]
-        self.data_collector.sensors[path].disable()
-        print(Colors.MAGENTA_BOLD + f"[Foxglove Info] Last client unsubscribed from {path}{topic}" + Colors.RESET)
+        if path in self.data_collector.sensors:
+            topic = get_topic_for_sensor(self.data_collector.sensors[path])
+            self.data_collector.sensors[path].disable()
+            print(Colors.MAGENTA_BOLD + f"[Foxglove Info] Last client unsubscribed from {topic}" + Colors.RESET)
