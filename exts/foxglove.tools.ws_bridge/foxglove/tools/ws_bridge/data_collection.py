@@ -190,7 +190,7 @@ class IsaacSensor():
         return payload
     
     def fetch_transforms(self, prim, parent_prim = None):
-        prim_id = str(prim.GetPath())
+        prim_id = prim.GetName() # str(prim.GetPath())
 
         transform = UsdGeom.Xformable(prim)
         local_transform = transform.GetLocalTransformation()

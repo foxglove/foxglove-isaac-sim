@@ -22,7 +22,7 @@ icon = "data/icon.png"
 "omni.isaac.core" = {}
 
 [[python.module]]
-name = "foxglove_isaac_bridge"
+name = "foxglove.tools.ws_bridge"
 
 [python.pipapi]
 use_online_index = true
