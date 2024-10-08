@@ -1,3 +1,6 @@
+# This file's implementation is based on the server example files found at:
+# https://github.com/foxglove/ws-protocol/tree/main/python/src/foxglove_websocket/examples
+
 import asyncio
 import json
 import time
@@ -11,7 +14,6 @@ from foxglove_websocket.types import (
 )
 
 from .schemas import get_schema_for_sensor
-
 
 # Terminal text formatting
 class Colors:
