@@ -2,16 +2,15 @@ import io
 import base64
 import os
 import json
-import time
 
 from PIL import Image
 import numpy as np
 
-import omni
-import omni.isaac.sensor as sensor
-from omni.isaac.core.articulations import Articulation
-from pxr import Gf, UsdGeom
-from pxr.Usd import Prim as Prim
+import omni # type: ignore
+import omni.isaac.sensor as sensor # type: ignore
+from omni.isaac.core.articulations import Articulation # type: ignore
+from pxr import Gf, UsdGeom # type: ignore
+from pxr.Usd import Prim as Prim # type: ignore
 
 from foxglove_schemas_protobuf.CompressedImage_pb2 import CompressedImage
 from foxglove_schemas_protobuf.FrameTransform_pb2 import FrameTransform
