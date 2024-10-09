@@ -1,3 +1,7 @@
+# The supported message types can be found at:
+# https://github.com/foxglove/schemas/tree/main/schemas/proto/foxglove (Protobuf)
+# https://github.com/foxglove/schemas/tree/main/schemas/jsonschema (JSON)
+
 import os
 import json
 from base64 import b64encode
